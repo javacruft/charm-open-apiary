@@ -1,0 +1,31 @@
+# Copyright 2021 James Page
+# See LICENSE file for licensing details.
+name: open-apiary
+description: |
+  Open Apiary is a web application that helps you managed your
+  apiaries and bee hives. It's built with ease and simplicity
+  in mind, allowing you to access your hive records from anywhere
+  with an internet connection.
+summary: |
+  Online record keeping for apiaries and bee hives
+
+containers:
+  open-apiary:
+    resource: open-apiary-image
+
+resources:
+  open-apiary-image:
+    type: oci-image
+    description: OCI image for Open Apiary (mrsimonemms/open-apiary)
+
+storage:
+  data:
+    type: filesystem
+    location: /data
+  uploads:
+    type: filesystem
+    location: /uploads
+
+requires:
+  ingress:
+    interface: ingress

@@ -17,13 +17,14 @@ To deploy Open Apiary:
 
 ## Configuration
 
-Open Apiary uses the OpenWeather API to get weather data and is used
-to pre-populate the weather data for new inspections.
+Open Apiary uses [OpenWeather API](https://openweathermap.org/api)
+to get weather data and is used to pre-populate the weather data for
+new inspections.
 
-To get a token, please visit the registration page for OpenWeather.
-The Free Tier is perfectly acceptable for Open Apiary - it only uses
-the current weather API and caches calls for 10 minutes avoiding any
-problems with rate-limiting.
+To get a token, please visit the [registration page](https://openweathermap.org/appid)
+for OpenWeather. The Free Tier is perfectly acceptable for Open Apiary - it only
+uses the current weather API and caches calls for 10 minutes avoiding any problems
+with rate-limiting.
 
 You can then provide your API key using the weather-api-token
 configuration option:

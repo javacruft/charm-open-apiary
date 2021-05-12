@@ -29,3 +29,7 @@ storage:
 requires:
   ingress:
     interface: ingress
+
+peers:
+  apiary:
+    interface: apiary

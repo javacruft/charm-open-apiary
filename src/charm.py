@@ -14,10 +14,12 @@ develop a new k8s charm using the Operator Framework:
 
 import json
 import logging
+import secrets
 
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
 
-from ops.charm import CharmBase
+from ops.charm import CharmBase, RelationChangedEvent, LeaderElectedEvent
+from ops.framework import StoredState
 from ops.main import main
 from ops.model import ActiveStatus
 
@@ -27,9 +29,13 @@ logger = logging.getLogger(__name__)
 class OpenApiaryCharm(CharmBase):
     """Charm the service."""
 
+    _stored = StoredState()
+
     def __init__(self, *args):
         super().__init__(*args)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
+        self.framework.observe(self.on.leader_elected, self._on_leader_elected)
+        self.framework.observe(self.on.apiary_relation_changed, self._on_apiary_changed)
         self.ingress = IngressRequires(
             self,
             {
@@ -38,6 +44,20 @@ class OpenApiaryCharm(CharmBase):
                 "service-port": 3000,
             },
         )
+        self._stored.set_default(jwt_token=secrets.token_hex(16))
+
+    def _on_leader_elected(self, event: LeaderElectedEvent) -> None:
+        peer_relation = self.model.get_relation("apiary")
+        jwt_token = secrets.token_hex(16)
+        self._stored.jwt_token = jwt_token
+        peer_relation.data[self.app].update({"jwt-token": jwt_token})
+
+    def _on_apiary_changed(self, event: RelationChangedEvent) -> None:
+        if self.unit.is_leader():
+            return
+        jwt_token = event.relation.data[event.app].get("jwt-token")
+        self._stored.jwt_token = jwt_token
+        self._on_config_changed(event)
 
     def _on_config_changed(self, event):
         """Define and start a workload using the Pebble API"""
@@ -83,7 +103,7 @@ class OpenApiaryCharm(CharmBase):
     def _open_apiary_config(self):
         return {
             "db": {"type": "sqlite", "database": "/data/db.sql"},
-            "jwt": {"secret": "some-secret"},
+            "jwt": {"secret": self._stored.jwt_token},
         }
 
 

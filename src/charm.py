@@ -74,7 +74,7 @@ class OpenApiaryCharm(CharmBase):
                         "UPLOAD_PATH": "/uploads",
                         "LOG_DESTINATION": "stdout",
                         "LOG_LEVEL": "info",
-                        "WEATHER_API_KEY": self.config.get("weather-api-key", ""),
+                        "WEATHER_API_KEY": self.config.get("weather-api-token", ""),
                     },
                 }
             },

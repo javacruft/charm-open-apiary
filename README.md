@@ -1,4 +1,4 @@
-# open-apiary
+# Open Apiary
 
 ## Description
 

@@ -72,7 +72,7 @@ class OpenApiaryCharm(CharmBase):
                         "PORT": "3000",
                         "DATA_PATH": "/data",
                         "UPLOAD_PATH": "/uploads",
-                        "LOG_DESTINATION": "stdout",
+                        "LOG_DESTINATION": "/data/open-apiary.log",
                         "LOG_LEVEL": "info",
                         "WEATHER_API_KEY": self.config.get("weather-api-token", ""),
                     },

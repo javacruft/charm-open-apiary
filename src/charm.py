@@ -147,7 +147,7 @@ class OpenApiaryCharm(CharmBase):
                 "type": "mysql"
             }
             db.update(self._stored.mysql_connection)
-        logging.info(db)
+            logging.info("Configuring connection to remote MySQL DB")
         return {
             "db": db,
             "jwt": {"secret": self._stored.jwt_token},

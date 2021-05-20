@@ -18,7 +18,12 @@ import secrets
 
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
 
-from ops.charm import CharmBase, RelationChangedEvent, LeaderElectedEvent
+from ops.charm import (
+    CharmBase,
+    RelationBrokenEvent,
+    RelationChangedEvent,
+    LeaderElectedEvent,
+)
 from ops.framework import StoredState
 from ops.main import main
 from ops.model import ActiveStatus
@@ -35,7 +40,11 @@ class OpenApiaryCharm(CharmBase):
         super().__init__(*args)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on.leader_elected, self._on_leader_elected)
+
         self.framework.observe(self.on.apiary_relation_changed, self._on_apiary_changed)
+
+        self.framework.observe(self.on.mysql_database_relation_changed, self._on_db_changed)
+        self.framework.observe(self.on.mysql_database_relation_broken, self._on_db_broken)
         self.ingress = IngressRequires(
             self,
             {
@@ -45,6 +54,7 @@ class OpenApiaryCharm(CharmBase):
             },
         )
         self._stored.set_default(jwt_token=secrets.token_hex(16))
+        self._stored.set_default(mysql_connection=None)
 
     def _on_leader_elected(self, event: LeaderElectedEvent) -> None:
         peer_relation = self.model.get_relation("apiary")
@@ -57,6 +67,27 @@ class OpenApiaryCharm(CharmBase):
             return
         jwt_token = event.relation.data[event.app].get("jwt-token")
         self._stored.jwt_token = jwt_token
+        self._on_config_changed(event)
+
+    def _on_db_changed(self, event: RelationChangedEvent) -> None:
+        """Handle connection to MySQL DB"""
+        # TODO: refactor into interface library for more general use
+        mysql_connection = {
+            "database": event.relation.data[event.unit].get("database"),
+            "host": event.relation.data[event.unit].get("host"),
+            "port": event.relation.data[event.unit].get("port", 3306),
+            "username": event.relation.data[event.unit].get("user"),
+            "password": event.relation.data[event.unit].get("password"),
+        }
+        if all(mysql_connection.values()):
+            self._stored.mysql_connection = mysql_connection
+        else:
+            self._stored.mysql_connection = None
+        self._on_config_changed(event)
+
+    def _on_db_broken(self, event: RelationBrokenEvent) -> None:
+        """Handle removal of relation to DB"""
+        self._stored.mysql_connection = None
         self._on_config_changed(event)
 
     def _on_config_changed(self, event) -> None:
@@ -78,11 +109,12 @@ class OpenApiaryCharm(CharmBase):
             logging.info("Restarted open_apiary service")
 
         self.ingress.update_config(
-            {"service_hostname": self.config["external-hostname"]}
+            {"service-hostname": self.config["external-hostname"]}
         )
         self.unit.status = ActiveStatus()
 
     def _open_apiary_layer(self) -> dict:
+        """Generate Pebble Layer for Open Apiary"""
         return {
             "summary": "Open Apiary layer",
             "description": "pebble config layer for Open Apiary",
@@ -105,8 +137,19 @@ class OpenApiaryCharm(CharmBase):
         }
 
     def _open_apiary_config(self) -> dict:
+        """Generate configuration for Open Apiary"""
+        db = {
+            "type": "sqlite",
+            "database": "/data/db.sql"
+        }
+        if self._stored.mysql_connection:
+            db = {
+                "type": "mysql"
+            }
+            db.update(self._stored.mysql_connection)
+        logging.info(db)
         return {
-            "db": {"type": "sqlite", "database": "/data/db.sql"},
+            "db": db,
             "jwt": {"secret": self._stored.jwt_token},
         }
 

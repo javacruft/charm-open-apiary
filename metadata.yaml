@@ -34,6 +34,8 @@ storage:
 requires:
   ingress:
     interface: ingress
+  mysql-database:
+    interface: mysql
 
 peers:
   apiary:

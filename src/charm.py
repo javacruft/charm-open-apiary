@@ -43,8 +43,12 @@ class OpenApiaryCharm(CharmBase):
 
         self.framework.observe(self.on.apiary_relation_changed, self._on_apiary_changed)
 
-        self.framework.observe(self.on.mysql_database_relation_changed, self._on_db_changed)
-        self.framework.observe(self.on.mysql_database_relation_broken, self._on_db_broken)
+        self.framework.observe(
+            self.on.mysql_database_relation_changed, self._on_db_changed
+        )
+        self.framework.observe(
+            self.on.mysql_database_relation_broken, self._on_db_broken
+        )
         self.ingress = IngressRequires(
             self,
             {
@@ -108,6 +112,9 @@ class OpenApiaryCharm(CharmBase):
             container.start("open-apiary")
             logging.info("Restarted open_apiary service")
 
+        package_info = json.loads(container.pull("/opt/app/package.json").read())
+        self.unit.set_workload_version(package_info.get("version"))
+
         self.ingress.update_config(
             {"service-hostname": self.config["external-hostname"]}
         )
@@ -138,14 +145,9 @@ class OpenApiaryCharm(CharmBase):
 
     def _open_apiary_config(self) -> dict:
         """Generate configuration for Open Apiary"""
-        db = {
-            "type": "sqlite",
-            "database": "/data/db.sql"
-        }
+        db = {"type": "sqlite", "database": "/data/db.sql"}
         if self._stored.mysql_connection:
-            db = {
-                "type": "mysql"
-            }
+            db = {"type": "mysql"}
             db.update(self._stored.mysql_connection)
             logging.info("Configuring connection to remote MySQL DB")
         return {

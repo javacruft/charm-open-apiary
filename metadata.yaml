@@ -17,6 +17,11 @@ resources:
   open-apiary-image:
     type: oci-image
     description: OCI image for Open Apiary (mrsimonemms/open-apiary)
+    mounts:
+      - storage: data
+        location: /data
+      - storage: uploads
+        location: /uploads
 
 storage:
   data:

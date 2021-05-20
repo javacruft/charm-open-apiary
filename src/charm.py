@@ -39,7 +39,7 @@ class OpenApiaryCharm(CharmBase):
         self.ingress = IngressRequires(
             self,
             {
-                "service-hostname": "open-apiary.juju",
+                "service-hostname": self.config["external-hostname"],
                 "service-name": self.app.name,
                 "service-port": 3000,
             },
@@ -59,7 +59,7 @@ class OpenApiaryCharm(CharmBase):
         self._stored.jwt_token = jwt_token
         self._on_config_changed(event)
 
-    def _on_config_changed(self, event):
+    def _on_config_changed(self, event) -> None:
         """Define and start a workload using the Pebble API"""
         container = self.unit.get_container("open-apiary")
         layer = self._open_apiary_layer()
@@ -76,9 +76,13 @@ class OpenApiaryCharm(CharmBase):
             )
             container.start("open-apiary")
             logging.info("Restarted open_apiary service")
+
+        self.ingress.update_config(
+            {"service_hostname": self.config["external-hostname"]}
+        )
         self.unit.status = ActiveStatus()
 
-    def _open_apiary_layer(self):
+    def _open_apiary_layer(self) -> dict:
         return {
             "summary": "Open Apiary layer",
             "description": "pebble config layer for Open Apiary",
@@ -100,7 +104,7 @@ class OpenApiaryCharm(CharmBase):
             },
         }
 
-    def _open_apiary_config(self):
+    def _open_apiary_config(self) -> dict:
         return {
             "db": {"type": "sqlite", "database": "/data/db.sql"},
             "jwt": {"secret": self._stored.jwt_token},
@@ -108,4 +112,4 @@ class OpenApiaryCharm(CharmBase):
 
 
 if __name__ == "__main__":
-    main(OpenApiaryCharm)
+    main(OpenApiaryCharm, use_juju_for_storage=True)

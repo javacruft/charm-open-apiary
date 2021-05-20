@@ -6,3 +6,7 @@ options:
     default:
     description: API token for weather integration
     type: string
+  external-hostname:
+    default: open-apiary.juju
+    description: External hostname to access the Open Apiary Web application
+    type: string

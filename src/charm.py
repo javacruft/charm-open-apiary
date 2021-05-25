@@ -134,7 +134,7 @@ class OpenApiaryCharm(CharmBase):
                         "DATA_PATH": "/data",
                         "UPLOAD_PATH": "/uploads",
                         "LOG_DESTINATION": "/data/open-apiary.log",
-                        "LOG_LEVEL": "info",
+                        "LOG_LEVEL": "debug" if self.config.get("debug") else "info",
                         "WEATHER_API_KEY": self.config.get("weather-api-token") or "",
                     },
                 }

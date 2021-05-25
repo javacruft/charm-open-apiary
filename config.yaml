@@ -10,3 +10,7 @@ options:
     default: open-apiary.juju
     description: External hostname to access the Open Apiary Web application
     type: string
+  debug:
+    default: false
+    description: Enable DEBUG level logging
+    type: boolean

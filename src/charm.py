@@ -57,6 +57,7 @@ class OpenApiaryCharm(CharmBase):
         jwt_token = secrets.token_hex(16)
         self._stored.jwt_token = jwt_token
         self.apiary.set_token(jwt_token)
+        self._on_config_changed(event)
 
     def _on_apiary_changed(self, event: TokenAvailableEvent) -> None:
         """Handle changes on peer relation to cluster"""
@@ -102,6 +103,10 @@ class OpenApiaryCharm(CharmBase):
             logging.info("Added updated layer 'open-apiary' to Pebble plan")
             if container.get_service("open-apiary").is_running():
                 container.stop("open-apiary")
+            # NOTE(jamespage)
+            # there is a bug here - if the configuration file needs updating
+            # it will only be updated if the pebble services definition has
+            # changed - maybe pass a checksum of this file via the environment?
             container.push(
                 "/opt/app/config.json",
                 json.dumps(self._open_apiary_config(), sort_keys=True, indent=2),

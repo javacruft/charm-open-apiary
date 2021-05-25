@@ -54,12 +54,14 @@ class ApiaryPeers(Object):
         )
 
     def _on_apiary_relation_changed(self, event) -> None:
+        """Handle for change events on the peer relation"""
         if self.jwt_token:
             logging.info("JWT token provided by leader, emitting event")
             self.on.token_available.emit()
 
     @property
     def jwt_token(self) -> str:
+        """Current JWT token provided via the peer relation application databag"""
         return self.apiary.data[self.apiary.app].get("jwt-token")
 
     @property
@@ -67,6 +69,6 @@ class ApiaryPeers(Object):
         """The relation associated with this interface"""
         return self.framework.model.get_relation(self.relation_name)
 
-    def set_token(self, jwt_token):
+    def set_token(self, jwt_token: str) -> None:
         """Share JWT token with peers"""
         self.apiary.data[self.apiary.app]["jwt-token"] = jwt_token

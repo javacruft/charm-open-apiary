@@ -14,6 +14,7 @@ import logging
 
 from ops.framework import EventBase, ObjectEvents, EventSource, Object
 from ops.model import Relation
+from ops.charm import RelationChangedEvent
 
 # The unique Charmhub library identifier, never change it
 LIBID = "0e0479a91338413595db88baba97a23e"
@@ -54,7 +55,7 @@ class ApiaryPeers(Object):
             self._on_apiary_relation_changed,
         )
 
-    def _on_apiary_relation_changed(self, event) -> None:
+    def _on_apiary_relation_changed(self, event: RelationChangedEvent) -> None:
         """Handle for change events on the peer relation"""
         if self.jwt_token:
             logging.debug(

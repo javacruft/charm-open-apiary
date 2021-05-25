@@ -78,6 +78,7 @@ class TestCharm(unittest.TestCase):
                         "LOG_DESTINATION": "/data/open-apiary.log",
                         "LOG_LEVEL": "debug" if debug else "info",
                         "WEATHER_API_KEY": weather_token or "",
+                        "CONFIG_CHECKSUM": ANY,
                     },
                 }
             }

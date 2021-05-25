@@ -2,6 +2,7 @@
 # Copyright 2021 James Page
 # See LICENSE file for licensing details.
 
+import hashlib
 import json
 import logging
 import secrets
@@ -22,6 +23,12 @@ from ops.model import ActiveStatus
 logger = logging.getLogger(__name__)
 
 
+def checksum_dict(data):
+    return hashlib.sha256(
+        json.dumps(data, sort_keys=True, indent=2).encode()
+    ).hexdigest()
+
+
 class OpenApiaryCharm(CharmBase):
     """Charm the service."""
 
@@ -32,7 +39,7 @@ class OpenApiaryCharm(CharmBase):
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on.leader_elected, self._on_leader_elected)
 
-        self.apiary = ApiaryPeers(self, 'apiary')
+        self.apiary = ApiaryPeers(self, "apiary")
         self.framework.observe(self.apiary.on.token_available, self._on_apiary_changed)
 
         self.framework.observe(
@@ -103,10 +110,6 @@ class OpenApiaryCharm(CharmBase):
             logging.info("Added updated layer 'open-apiary' to Pebble plan")
             if container.get_service("open-apiary").is_running():
                 container.stop("open-apiary")
-            # NOTE(jamespage)
-            # there is a bug here - if the configuration file needs updating
-            # it will only be updated if the pebble services definition has
-            # changed - maybe pass a checksum of this file via the environment?
             container.push(
                 "/opt/app/config.json",
                 json.dumps(self._open_apiary_config(), sort_keys=True, indent=2),
@@ -141,6 +144,7 @@ class OpenApiaryCharm(CharmBase):
                         "LOG_DESTINATION": "/data/open-apiary.log",
                         "LOG_LEVEL": "debug" if self.config.get("debug") else "info",
                         "WEATHER_API_KEY": self.config.get("weather-api-token") or "",
+                        "CONFIG_CHECKSUM": checksum_dict(self._open_apiary_config()),
                     },
                 }
             },

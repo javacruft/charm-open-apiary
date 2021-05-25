@@ -10,6 +10,10 @@ When the token has been provided, the interface will emit the 'token_available'
 event which charms can then respond to.
 """
 
+import logging
+
+from ops.framework import EventBase, ObjectEvents, EventSource, Object
+
 # The unique Charmhub library identifier, never change it
 LIBID = "0e0479a91338413595db88baba97a23e"
 
@@ -19,10 +23,6 @@ LIBAPI = 0
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
 LIBPATCH = 1
-
-import logging
-
-from ops.framework import EventBase, ObjectEvents, EventSource, Object
 
 
 class TokenAvailableEvent(EventBase):

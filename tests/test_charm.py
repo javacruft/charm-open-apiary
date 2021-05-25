@@ -50,12 +50,17 @@ class TestCharm(unittest.TestCase):
         container = self.harness.model.unit.get_container("open-apiary")
         container.push = MagicMock()
         container.pull = MagicMock()
+        # Use of a lambda here just makes sure everytime the pull method is
+        # executed a new StringIO reader is created.
         container.pull.side_effect = lambda *args: io.StringIO(NODE_VERSION_INFO)
         self.addCleanup(container.push)
         self.addCleanup(container.pull)
         self.maxDiff = None
 
-    def _test_config_changed(self, weather_token=None, debug=False):
+    def _test_config_changed(
+        self, weather_token: str = None, debug: bool = False
+    ) -> None:
+        """Base config_changed test handler"""
         # Expected plan with default config
         expected_plan = {
             "services": {
@@ -108,12 +113,15 @@ class TestCharm(unittest.TestCase):
         self.assertEqual(self.harness.get_workload_version(), "1.1.1")
 
     def test_config_changed(self):
+        """config changed with default options"""
         self._test_config_changed()
 
     def test_config_changed_weather_token_set(self):
+        """config changed with token and debug logging"""
         self._test_config_changed(weather_token="mytoken", debug=True)
 
     def test_mysql_relation(self):
+        """mysql-database relation test"""
         relation_id = self.harness.add_relation("mysql-database", "mysql")
         self.harness.add_relation_unit(relation_id, "mysql/0")
 
@@ -143,3 +151,6 @@ class TestCharm(unittest.TestCase):
             "jwt": {"secret": ANY},
         }
         self.assertEqual(expected_oa_config, self.harness.charm._open_apiary_config())
+
+        # TODO(jamespage)
+        # write relation removal tests once Harness supports this

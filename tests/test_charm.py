@@ -39,6 +39,8 @@ class TestCharm(unittest.TestCase):
         container.push = MagicMock()
         container.pull = MagicMock()
         container.pull.return_value = io.StringIO(NODE_VERSION_INFO)
+        self.addCleanup(container.push)
+        self.addCleanup(container.pull)
         self.maxDiff = None
 
     def _test_config_changed(self, weather_token=None):

@@ -51,12 +51,14 @@ class OpenApiaryCharm(CharmBase):
         self._stored.set_default(mysql_connection=None)
 
     def _on_leader_elected(self, event: LeaderElectedEvent) -> None:
+        """Regenerate JWT token when new leader elected"""
         peer_relation = self.model.get_relation("apiary")
         jwt_token = secrets.token_hex(16)
         self._stored.jwt_token = jwt_token
         peer_relation.data[self.app].update({"jwt-token": jwt_token})
 
     def _on_apiary_changed(self, event: RelationChangedEvent) -> None:
+        """Handle changes on peer relation to cluster"""
         if self.unit.is_leader():
             return
         jwt_token = event.relation.data[event.app].get("jwt-token")
@@ -65,7 +67,9 @@ class OpenApiaryCharm(CharmBase):
 
     def _on_db_changed(self, event: RelationChangedEvent) -> None:
         """Handle connection to MySQL DB"""
-        # TODO: refactor into interface library for more general use
+        # TODO(jamespage)
+        # refactor into interface library for more general use or
+        # consume something more official from a mysql* operator
         mysql_connection = {
             "database": event.relation.data[event.unit].get("database"),
             "host": event.relation.data[event.unit].get("host"),
@@ -86,6 +90,10 @@ class OpenApiaryCharm(CharmBase):
 
     def _on_config_changed(self, event) -> None:
         """Define and start a workload using the Pebble API"""
+        # NOTE(jamespage):
+        # need to understand how config-change/relations get executed
+        # if it applies to all sidecars at the same time there is a
+        # chance that a service interuption will occur
         container = self.unit.get_container("open-apiary")
         layer = self._open_apiary_layer()
         services = container.get_plan().to_dict().get("services", {})
@@ -127,7 +135,7 @@ class OpenApiaryCharm(CharmBase):
                         "UPLOAD_PATH": "/uploads",
                         "LOG_DESTINATION": "/data/open-apiary.log",
                         "LOG_LEVEL": "info",
-                        "WEATHER_API_KEY": self.config.get("weather-api-token", ""),
+                        "WEATHER_API_KEY": self.config.get("weather-api-token") or "",
                     },
                 }
             },

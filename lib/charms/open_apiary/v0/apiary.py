@@ -13,6 +13,7 @@ event which charms can then respond to.
 import logging
 
 from ops.framework import EventBase, ObjectEvents, EventSource, Object
+from ops.model import Relation
 
 # The unique Charmhub library identifier, never change it
 LIBID = "0e0479a91338413595db88baba97a23e"
@@ -65,7 +66,7 @@ class ApiaryPeers(Object):
         return self.apiary.data[self.apiary.app].get("jwt-token")
 
     @property
-    def apiary(self):
+    def apiary(self) -> Relation:
         """The relation associated with this interface"""
         return self.framework.model.get_relation(self.relation_name)
 

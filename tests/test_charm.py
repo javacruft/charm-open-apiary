@@ -41,7 +41,7 @@ class TestCharm(unittest.TestCase):
         container.pull.return_value = io.StringIO(NODE_VERSION_INFO)
         self.maxDiff = None
 
-    def _test_config_changed(self, weather_token=""):
+    def _test_config_changed(self, weather_token=None):
         # Expected plan with default config
         expected_plan = {
             "services": {
@@ -56,7 +56,7 @@ class TestCharm(unittest.TestCase):
                         "UPLOAD_PATH": "/uploads",
                         "LOG_DESTINATION": "/data/open-apiary.log",
                         "LOG_LEVEL": "info",
-                        "WEATHER_API_KEY": weather_token,
+                        "WEATHER_API_KEY": weather_token or "",
                     },
                 }
             }
@@ -64,7 +64,7 @@ class TestCharm(unittest.TestCase):
 
         # Get the open-apiary container from the model
         container = self.harness.model.unit.get_container("open-apiary")
-        self.harness.update_config({"weather-api-token": weather_token or None})
+        self.harness.update_config({"weather-api-token": weather_token})
         # Everything happens on config-changed so just emit this event
         # Get the plan now we've run PebbleReady
         updated_plan = self.harness.get_container_pebble_plan("open-apiary").to_dict()

@@ -7,6 +7,7 @@ import logging
 import secrets
 
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
+from charms.open_apiary.v0.apiary import ApiaryPeers, TokenAvailableEvent
 
 from ops.charm import (
     CharmBase,
@@ -31,7 +32,8 @@ class OpenApiaryCharm(CharmBase):
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on.leader_elected, self._on_leader_elected)
 
-        self.framework.observe(self.on.apiary_relation_changed, self._on_apiary_changed)
+        self.apiary = ApiaryPeers(self, 'apiary')
+        self.framework.observe(self.apiary.on.token_available, self._on_apiary_changed)
 
         self.framework.observe(
             self.on.mysql_database_relation_changed, self._on_db_changed
@@ -52,17 +54,15 @@ class OpenApiaryCharm(CharmBase):
 
     def _on_leader_elected(self, event: LeaderElectedEvent) -> None:
         """Regenerate JWT token when new leader elected"""
-        peer_relation = self.model.get_relation("apiary")
         jwt_token = secrets.token_hex(16)
         self._stored.jwt_token = jwt_token
-        peer_relation.data[self.app].update({"jwt-token": jwt_token})
+        self.apiary.set_token(jwt_token)
 
-    def _on_apiary_changed(self, event: RelationChangedEvent) -> None:
+    def _on_apiary_changed(self, event: TokenAvailableEvent) -> None:
         """Handle changes on peer relation to cluster"""
         if self.unit.is_leader():
             return
-        jwt_token = event.relation.data[event.app].get("jwt-token")
-        self._stored.jwt_token = jwt_token
+        self._stored.jwt_token = self.apiary.jwt_token
         self._on_config_changed(event)
 
     def _on_db_changed(self, event: RelationChangedEvent) -> None:

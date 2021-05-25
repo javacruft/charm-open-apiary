@@ -1,6 +1,10 @@
 # Copyright 2021 James Page
 # See LICENSE file for licensing details.
 
+# TODO
+# peer relation testing
+# ingress testing and configuration option for hostname
+
 import io
 import json
 import unittest

@@ -144,6 +144,9 @@ class OpenApiaryCharm(CharmBase):
                         "LOG_DESTINATION": "/data/open-apiary.log",
                         "LOG_LEVEL": "debug" if self.config.get("debug") else "info",
                         "WEATHER_API_KEY": self.config.get("weather-api-token") or "",
+                        # NOTE(jamespage): ugly but works - maybe push needs
+                        # restart on change type integration to avoid this type of
+                        # thing.
                         "CONFIG_CHECKSUM": checksum_dict(self._open_apiary_config()),
                     },
                 }

@@ -31,7 +31,9 @@ class OpenApiaryCharm(CharmBase):
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on.leader_elected, self._on_leader_elected)
 
-        self.framework.observe(self.on.apiary_relation_changed, self._on_apiary_changed)
+        self.framework.observe(
+            self.on.apiary_relation_changed, self._on_apiary_changed
+        )
 
         self.framework.observe(
             self.on.mysql_database_relation_changed, self._on_db_changed
@@ -104,13 +106,17 @@ class OpenApiaryCharm(CharmBase):
                 container.stop("open-apiary")
             container.push(
                 "/opt/app/config.json",
-                json.dumps(self._open_apiary_config(), sort_keys=True, indent=2),
+                json.dumps(
+                    self._open_apiary_config(), sort_keys=True, indent=2
+                ),
                 make_dirs=True,
             )
             container.start("open-apiary")
             logging.info("Restarted open_apiary service")
 
-        package_info = json.loads(container.pull("/opt/app/package.json").read())
+        package_info = json.loads(
+            container.pull("/opt/app/package.json").read()
+        )
         self.unit.set_workload_version(package_info.get("version"))
 
         self.ingress.update_config(
@@ -135,7 +141,8 @@ class OpenApiaryCharm(CharmBase):
                         "UPLOAD_PATH": "/uploads",
                         "LOG_DESTINATION": "/data/open-apiary.log",
                         "LOG_LEVEL": "info",
-                        "WEATHER_API_KEY": self.config.get("weather-api-token") or "",
+                        "WEATHER_API_KEY": self.config.get("weather-api-token")
+                        or "",
                     },
                 }
             },

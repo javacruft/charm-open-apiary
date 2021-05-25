@@ -71,14 +71,18 @@ class TestCharm(unittest.TestCase):
         self.harness.charm.on.config_changed.emit()
         # Everything happens on config-changed so just emit this event
         # Get the plan now we've run PebbleReady
-        updated_plan = self.harness.get_container_pebble_plan("open-apiary").to_dict()
+        updated_plan = self.harness.get_container_pebble_plan(
+            "open-apiary"
+        ).to_dict()
         # Check we've got the plan we expected
         self.assertEqual(expected_plan, updated_plan)
         # Check configuration file pushed to container
         container.push.assert_called_once_with(
             "/opt/app/config.json",
             json.dumps(
-                self.harness.charm._open_apiary_config(), sort_keys=True, indent=2
+                self.harness.charm._open_apiary_config(),
+                sort_keys=True,
+                indent=2,
             ),
             make_dirs=True,
         )
@@ -96,7 +100,9 @@ class TestCharm(unittest.TestCase):
         container.pull.return_value = io.StringIO(NODE_VERSION_INFO)
 
         self.harness.update_config({"weather-api-token": "mytoken"})
-        updated_plan = self.harness.get_container_pebble_plan("open-apiary").to_dict()
+        updated_plan = self.harness.get_container_pebble_plan(
+            "open-apiary"
+        ).to_dict()
         expected_plan = {
             "services": {
                 "open-apiary": {
@@ -119,7 +125,9 @@ class TestCharm(unittest.TestCase):
         container.push.assert_called_once_with(
             "/opt/app/config.json",
             json.dumps(
-                self.harness.charm._open_apiary_config(), sort_keys=True, indent=2
+                self.harness.charm._open_apiary_config(),
+                sort_keys=True,
+                indent=2,
             ),
             make_dirs=True,
         )

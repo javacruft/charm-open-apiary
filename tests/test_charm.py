@@ -157,3 +157,4 @@ class TestCharm(unittest.TestCase):
 
         # TODO(jamespage)
         # write relation removal tests once Harness supports this
+        # https://github.com/canonical/operator/pull/460

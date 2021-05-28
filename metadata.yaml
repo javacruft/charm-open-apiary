@@ -8,6 +8,7 @@ description: |
   with an internet connection.
 summary: |
   Online record keeping for apiaries and bee hives
+docs: https://discourse.charmhub.io/t/open-apiary-docs-index/4643
 
 containers:
   open-apiary:

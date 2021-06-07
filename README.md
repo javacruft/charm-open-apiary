@@ -12,8 +12,6 @@ connection.
 To deploy Open Apiary:
 
     juju deploy open-apiary
-    juju deploy nginx-ingress-controller
-    juju add-relation open-apiary nginx-ingress-controller
 
 ## Configuration
 
